@@ -4,7 +4,7 @@ import Control.Parallel.Strategies (parMap,rpar)
 
 -- Hilfsfuktionen
 fullPeriod (freq,_)	= 1/freq				-- Frequenz		-> Dauer einer Periode
-minTime (freq,thre)	= (/ (2*pi*freq)) $ asin thre		-- Frequenz & Threshold	-> Zeitpunkt, ab dem sin(x) >= Threshold
+minTime (freq,thre)	= asin thre / (2*pi*freq)		-- Frequenz & Threshold	-> Zeitpunkt, ab dem sin(x) >= Threshold
 maxTime wave		= fullPeriod wave /2 - minTime wave	-- Frequenz & Threshold	-> Zeitpunkt, ab dem sin(x) <= Threshold
 
 -- Liste der Refraktärzeiten (Anzahl der Refraktärzeiten, Mittlere Refraktärzeit, maximale Abweichung von der Mittleren Refraktärzeit in Prozent der Mittleren Refraktärzeit)
@@ -13,7 +13,7 @@ refPList		= \(nrRefPs,refRefP,deltaRefP)	-> refPList' nrRefPs refRefP (refRefP*d
 	refPList' n r d
 		| n <= 1	= [r]
 		| n == 2	= [r-d,r+d]
-		| otherwise	= (r-d) : refPList' (n-2) r (d*(n-3)/(n-1)) ++ [r+d]
+		| otherwise	= [r-d,r-d+2*d/n..r+d]
 
 -- Liste der Frequenzen (Minimale Frequenz, Maximale Frequenz, Schrittweite in Prozent der aktuellen Frequenz zur nächsten
 freqList (lowF,highF,percentF) 
@@ -52,8 +52,7 @@ peaksPerSecond freq refP	= cT $ tmp 100
 peakAvg f@(fmin,fmax,fper) r@(refPs,refRefP,deltaRefP) =
 	map (\freq -> (freq,peakAverage freq)) (freqList f)
 	where
-		avg xs		= sum xs / fromIntegral (length xs)
-		pPS 		= peaksPerSecond
-		list		= refPList r
+		avg xs			= sum xs / fromIntegral (length xs)
+		pPS 			= peaksPerSecond
+		list			= refPList r
 		peakAverage freq	= avg $ parMap rpar (pPS freq) list
-
