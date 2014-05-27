@@ -4,7 +4,7 @@ filename a b = "fmin=" ++ a ++ "Hz_fmax=" ++ b ++ "Hz"
 
 printGnuplot a b =
 	unlines [
-	"set terminal pngcairo size 1280,720 enhanced font 'Verdana,12'" ,
+	"set terminal pngcairo size 1920,1080 enhanced font 'Verdana,12'" ,
 	"set logscale x" ,
 	"set logscale y" ,
 	"set output '" ++ filename a b ++ ".png'",

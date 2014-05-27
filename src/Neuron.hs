@@ -12,7 +12,6 @@ refPList		= \(nrRefPs,refRefP,deltaRefP)	-> refPList' nrRefPs refRefP (refRefP*d
 	where
 	refPList' n r d
 		| n <= 1	= [r]
-		| n == 2	= [r-d,r+d]
 		| otherwise	= [r-d,r-d+2*d/n..r+d]
 
 -- Liste der Frequenzen (Minimale Frequenz, Maximale Frequenz, Schrittweite in Prozent der aktuellen Frequenz zur nächsten
@@ -23,7 +22,6 @@ freqList (lowF,highF,percentF)
 	where next	= lowF * (1.0+percentF/100)
 
 -- Sucht den Zeitpunkt, zu dem das Neuron auslöst
-peak :: Double -> (Double,Double) -> (Double,Double) -> Double
 peak n wave neuron@(_,offS)
 	| n*fpT+maxT < offS	= (n+1)*fpT+minT
 	| n*fpT+minT > offS	= n*fpT+minT
@@ -39,7 +37,7 @@ peaks count wave neuron@(refP,offS) repetitions
 	| count >= repetitions	= count / (offS-refP)							-- Anzahl der Peaks/Sekunde, falls "count >= repetitions"
 	| otherwise		= peaks (count+1) wave (refP,refP + peak 0 wave neuron) repetitions	-- nächsten Peak suchen und "count" vergrößern
 
--- Wrapper für "peaks", mit default Werten für Threshold (0.9) und Offset (0)
+-- Wrapper für "peaks", mit den default Werten für Threshold (0.9) und Offset (0)
 peaksPerSecond freq refP	= cT $ tmp 100
 	where
 	pPS	= peaks 0.0 (freq, 0.9) (refP, 0)	-- rufe Peaks mit Default Werten auf
