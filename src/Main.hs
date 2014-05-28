@@ -2,7 +2,7 @@ import System.Environment (getArgs)
 import System.IO (hPutStr,hFlush,hClose,openFile,IOMode (WriteMode))
 import System.Cmd (rawSystem)
 
-import Neuron (peakAvg)
+import Neuron (peakAvg, refPList)
 import Output (filename, printGnuplot, printCSV)
 
 main =	getArgs >>= \[fmin,fmax,fper,refPs,refRefP,deltaRefP] ->
@@ -13,7 +13,7 @@ main =	getArgs >>= \[fmin,fmax,fper,refPs,refRefP,deltaRefP] ->
 
 --	Schreibe inhalt in die Dateien
 	hPutStr csvFile (printCSV (peakAvg (read fmin,read fmax,read fper) (read refPs,read refRefP,read deltaRefP))) >>
-	hPutStr gnuplotFile (printGnuplot fmin fmax) >>
+	hPutStr gnuplotFile (printGnuplot fmin fmax (refPList (read refPs,read refRefP,read deltaRefP))) >>
 
 --	Schließe Dateien
 	hFlush csvFile >> hClose csvFile >>

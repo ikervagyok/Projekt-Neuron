@@ -1,6 +1,7 @@
-module Neuron (peakAvg) where
+module Neuron (peakAvg, refPList) where
 
 import Control.Parallel.Strategies (parMap,rpar)
+import Data.List (sort)
 
 -- Hilfsfuktionen
 fullPeriod (freq,_)	= 1/freq				-- Frequenz		-> Dauer einer Periode
@@ -8,11 +9,12 @@ minTime (freq,thre)	= asin thre / (2*pi*freq)		-- Frequenz & Threshold	-> Zeitpu
 maxTime wave		= fullPeriod wave /2 - minTime wave	-- Frequenz & Threshold	-> Zeitpunkt, ab dem sin(x) <= Threshold
 
 -- Liste der Refraktärzeiten (Anzahl der Refraktärzeiten, Mittlere Refraktärzeit, maximale Abweichung von der Mittleren Refraktärzeit in Prozent der Mittleren Refraktärzeit)
-refPList		= \(nrRefPs,refRefP,deltaRefP)	-> refPList' nrRefPs refRefP (refRefP*deltaRefP/100)
+refPList		= \(nrRefPs,refRefP,deltaRefP)	-> sort $ refPList' nrRefPs refRefP (refRefP*deltaRefP/100)
 	where
 	refPList' n r d
 		| n <= 1	= [r]
-		| otherwise	= [r-d,r-d+2*d/n..r+d]
+		| n == 2	= [r-d,r+d]
+		| otherwise	= refPList' (n-2) r (d*(n-3)/(n-1)) ++ refPList' 2 r d
 
 -- Liste der Frequenzen (Minimale Frequenz, Maximale Frequenz, Schrittweite in Prozent der aktuellen Frequenz zur nächsten
 freqList (lowF,highF,percentF) 
@@ -48,9 +50,10 @@ peaksPerSecond freq refP	= cT $ tmp 100
 
 -- Mittelt über alle Refraktärzeiten bei einer Frequenz - gibt dann eine Liste von Paaren aus in der Form (Frequenz, Mittlere Anzahl an Peaks/Sekunde)
 peakAvg f@(fmin,fmax,fper) r@(refPs,refRefP,deltaRefP) =
-	map (\freq -> (freq,peakAverage freq)) (freqList f)
+	map (\freq -> (freq,peakAverage freq,pList freq)) (freqList f)
 	where
 		avg xs			= sum xs / fromIntegral (length xs)
 		pPS 			= peaksPerSecond
-		list			= refPList r
-		peakAverage freq	= avg $ parMap rpar (pPS freq) list
+		rList			= refPList r
+		pList freq		= parMap rpar (pPS freq) rList
+		peakAverage freq	= avg $ pList freq
