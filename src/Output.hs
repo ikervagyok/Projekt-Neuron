@@ -16,7 +16,7 @@ printGnuplot a b xs =
 
 printPlot a b xs
 	| null xs	= "'" ++ filename a b ++ ".csv' using 1:" ++ show 2 ++ " title \"Average\" with lines lw 4 lt rgb \"red\"\n"
-	| otherwise	= "'" ++ filename a b ++ ".csv' using 1:" ++ show (l+2) ++ " title \"refP = " ++ printf "%.2E\" with lines,\\\n" x ++ printPlot a b t
+	| otherwise	= "'" ++ filename a b ++ ".csv' using 1:" ++ show (l+2) ++ " title \"Refactoring Period = " ++ printf "%.2E\" with lines,\\\n" x ++ printPlot a b t
 	where l = length xs
 	      x = head xs
 	      t = tail xs
